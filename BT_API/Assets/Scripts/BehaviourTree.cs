@@ -12,8 +12,6 @@ public class BehaviourTree : Node
 
     public BehaviourTree(string treeName) : base(treeName)
     {
-
-        //name = treeName;
     }
 
     public override Status Process()

@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,8 +12,23 @@ public class RobberBehaviour : MonoBehaviour
     [SerializeField]
     private GameObject van;
 
+    [SerializeField]
+    private GameObject backDoor;
+
+    [SerializeField]
+    private GameObject frontDoor;
+
+    [SerializeField]
+    [Range(0,1000)]
+    private int money = 800;
+
+    public enum ActionState { IDLE, WORKING};
+    private ActionState state = ActionState.IDLE;
+
     private NavMeshAgent agent;
     private BehaviourTree behaviourTree;
+
+    private Node.Status treeStatus = Node.Status.RUNNING;
 
     // Start is called before the first frame update
     void Start()
@@ -20,34 +36,124 @@ public class RobberBehaviour : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         behaviourTree = new BehaviourTree();
 
-        Node steal = new Node("Steal");
+        Sequence steal = new Sequence("Steal");
+        Leaf hasGotMoney = new Leaf("Has Got Money", HasMoney);
+        Leaf goToBackDoor = new Leaf("Go To Back Door", GoToBackDoor);
+        Leaf goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor);
         Leaf goToDiamond = new Leaf("Go To Diamond", GoToDiamond);
         Leaf goToVan = new Leaf("Go To Van", GoToVan);
+        Selector openDoor = new Selector("Open Door");
 
-        steal.AddChild(goToDiamond);
+        openDoor.AddChild(goToFrontDoor);
+        openDoor.AddChild(goToBackDoor); 
+        steal.AddChild(hasGotMoney);
+        steal.AddChild(openDoor);
+        steal.AddChild(goToDiamond);       
         steal.AddChild(goToVan);
         behaviourTree.AddChild(steal);
 
-        behaviourTree.Print();
-
-        behaviourTree.Process();    
+        behaviourTree.Print();         
     }
 
     public Node.Status GoToDiamond()
     {
-        agent.SetDestination(diamond.transform.position);
-        return Node.Status.SUCCESS;
+        Node.Status status = GoToLocation(diamond.transform.position);
+
+        if (status == Node.Status.SUCCESS) 
+        {
+            diamond.gameObject.transform.parent = gameObject.transform;
+        }
+        
+        return status;
+        
+    }
+
+    public Node.Status HasMoney()
+    {
+        if(money >= 500)
+        {
+            return Node.Status.FAILURE;
+        }
+        else
+        {
+            return Node.Status.SUCCESS;
+        }
     }
 
     public Node.Status GoToVan()
+    {      
+        Node.Status status = GoToLocation(van.transform.position);
+        if(status == Node.Status.SUCCESS)
+        {
+            money += 300;
+            Destroy(diamond);
+        }
+
+        return status;
+    }
+
+    public Node.Status GoToBackDoor()
     {
-        agent.SetDestination(van.transform.position);
-        return Node.Status.SUCCESS;
+        return GoToDoor(backDoor);
+    }
+
+    public Node.Status GoToFrontDoor()
+    {
+        return GoToDoor(frontDoor);
+    }
+
+    public Node.Status GoToDoor(GameObject door)
+    {
+        Node.Status status = GoToLocation(door.transform.position);
+
+        if (status == Node.Status.SUCCESS) 
+        {
+            if(!door.GetComponent<Lock>().IsLocked)
+            {
+                door.SetActive(false);
+                return Node.Status.SUCCESS;
+            }
+            else
+            {
+                return Node.Status.FAILURE;
+            }
+        }
+        else
+        {
+            return status;
+        }
+
+    }
+
+    public Node.Status GoToLocation(Vector3 destination)
+    {
+        float distanceToTarget = Vector3.Distance(destination, transform.position);
+
+        if (state == ActionState.IDLE)
+        {
+            agent.SetDestination(destination);
+            state = ActionState.WORKING;
+        }
+        else if (Vector3.Distance(agent.pathEndPosition, destination) >= 2.0f)
+        {
+            state = ActionState.IDLE;
+            return Node.Status.FAILURE;
+        }
+        else if (distanceToTarget < 2.0f)
+        {
+            state = ActionState.IDLE;
+            return Node.Status.SUCCESS;
+        }
+
+        return Node.Status.RUNNING;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (treeStatus != Node.Status.SUCCESS) 
+        {
+            treeStatus = behaviourTree.Process();
+        }
     }
 }
