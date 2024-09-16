@@ -1,11 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 public class Leaf : Node
 {
     public delegate Status Tick();
     public Tick ProcessMethod;
+
+    public delegate Status TickM(int index);
+    public TickM ProcessMethodM;
+
+    public int index;
 
     public Leaf() { }
 
@@ -20,11 +22,21 @@ public class Leaf : Node
         sortOrder = order;
     }
 
+    public Leaf(string nodeName, TickM processMethod, int ind) : base(nodeName)
+    {
+        ProcessMethodM = processMethod;
+        index = ind;
+    }
+
     public override Status Process()
     {
         if(ProcessMethod != null)
         {
              return ProcessMethod();
+        }
+        else if (ProcessMethodM != null)
+        {
+            return ProcessMethodM(index);
         }
         else 
         {

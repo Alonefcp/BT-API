@@ -1,5 +1,4 @@
 
-
 public class RSelector : Node
 {
     private bool shuffled = false;

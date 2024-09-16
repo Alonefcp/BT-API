@@ -5831,7 +5831,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a27b226183df256448d0eee1cadcc665, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isLocked: 1
+  isLocked: 0
 --- !u!4 &1796479289 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a5028766c6c2448878d200bb33de1f59, type: 3}
