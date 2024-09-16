@@ -11,6 +11,9 @@ public class Node
     public int currentChild = 0;
 
     public string name;
+    public int sortOrder;
+
+    
 
     public Node() { }
 
@@ -19,6 +22,11 @@ public class Node
         name = nodeName; 
     }
 
+    public Node(string nodeName, int order)
+    {
+        name = nodeName;
+        sortOrder = order;
+    }
 
     public virtual Status Process()
     {

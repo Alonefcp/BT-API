@@ -9,10 +9,15 @@ public class Leaf : Node
 
     public Leaf() { }
 
-    public Leaf(string nodeName, Tick processMethod)
+    public Leaf(string nodeName, Tick processMethod): base(nodeName) 
     {
-        name = nodeName;
         ProcessMethod = processMethod;
+    }
+
+    public Leaf(string nodeName, Tick processMethod, int order): base(nodeName)
+    {
+        ProcessMethod = processMethod;
+        sortOrder = order;
     }
 
     public override Status Process()
