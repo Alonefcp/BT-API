@@ -10,6 +10,9 @@ public class RobberBehaviour : BTAgent
     private GameObject diamond;
 
     [SerializeField]
+    private GameObject painting;
+
+    [SerializeField]
     private GameObject van;
 
     [SerializeField]
@@ -22,6 +25,8 @@ public class RobberBehaviour : BTAgent
     [Range(0,1000)]
     private int money = 800;
 
+    private GameObject pickUp = null;
+
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -30,20 +35,27 @@ public class RobberBehaviour : BTAgent
         Sequence steal = new Sequence("Steal");
         Leaf hasGotMoney = new Leaf("Has Got Money", HasMoney);
         Leaf goToBackDoor = new Leaf("Go To Back Door", GoToBackDoor);
-        Leaf goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor);
+        Leaf goToFrontDoor = new Leaf("Go To Front Door", GoToFrontDoor); 
         Leaf goToDiamond = new Leaf("Go To Diamond", GoToDiamond);
+        Leaf goToPainting = new Leaf("Go To Painting", GoToPainting);
         Leaf goToVan = new Leaf("Go To Van", GoToVan);
         Selector openDoor = new Selector("Open Door");
-
+        Selector selectObject = new Selector("Select object to steal");
         Invert invertMoney = new Invert("Invert Money");
+
+        selectObject.AddChild(goToDiamond);
+        selectObject.AddChild(goToPainting);
+
         invertMoney.AddChild(hasGotMoney);
 
         openDoor.AddChild(goToFrontDoor);
-        openDoor.AddChild(goToBackDoor); 
+        openDoor.AddChild(goToBackDoor);
+        
         steal.AddChild(invertMoney);
         steal.AddChild(openDoor);
-        steal.AddChild(goToDiamond);       
+        steal.AddChild(selectObject);       
         steal.AddChild(goToVan);
+
         behaviourTree.AddChild(steal);
 
         behaviourTree.Print();         
@@ -51,15 +63,41 @@ public class RobberBehaviour : BTAgent
 
     public Node.Status GoToDiamond()
     {
+
+        if (!diamond.activeSelf) //we have sold the diamond
+        {
+            return Node.Status.FAILURE;
+        }
+
         Node.Status status = GoToLocation(diamond.transform.position);
 
         if (status == Node.Status.SUCCESS) 
         {
-            diamond.gameObject.transform.parent = gameObject.transform;
+            diamond.transform.parent = gameObject.transform;
+            pickUp = diamond;
         }
         
         return status;
         
+    }
+
+    public Node.Status GoToPainting()
+    {
+        if (!painting.activeSelf) //we have sold the diamond
+        {
+            return Node.Status.FAILURE;
+        }
+
+        Node.Status status = GoToLocation(painting.transform.position);
+
+        if (status == Node.Status.SUCCESS)
+        {
+            painting.transform.parent = gameObject.transform;
+            pickUp = painting;
+        }
+
+        return status;
+
     }
 
     public Node.Status HasMoney()
@@ -80,7 +118,8 @@ public class RobberBehaviour : BTAgent
         if(status == Node.Status.SUCCESS)
         {
             money += 300;
-            Destroy(diamond);
+            
+            pickUp.SetActive(false);
         }
 
         return status;
@@ -104,7 +143,8 @@ public class RobberBehaviour : BTAgent
         {
             if(!door.GetComponent<Lock>().IsLocked)
             {
-                door.SetActive(false);
+                door.GetComponent<NavMeshObstacle>().enabled = false;
+                //door.SetActive(false);
                 return Node.Status.SUCCESS;
             }
             else
