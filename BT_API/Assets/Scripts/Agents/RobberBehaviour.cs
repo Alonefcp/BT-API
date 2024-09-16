@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class RobberBehaviour : MonoBehaviour
+public class RobberBehaviour : BTAgent
 {
     [SerializeField]
     private GameObject diamond;
@@ -22,20 +22,11 @@ public class RobberBehaviour : MonoBehaviour
     [Range(0,1000)]
     private int money = 800;
 
-    public enum ActionState { IDLE, WORKING};
-    private ActionState state = ActionState.IDLE;
-
-    private NavMeshAgent agent;
-    private BehaviourTree behaviourTree;
-
-    private Node.Status treeStatus = Node.Status.RUNNING;
-
     // Start is called before the first frame update
-    void Start()
+    protected override void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
-        behaviourTree = new BehaviourTree();
-
+        base.Start();
+      
         Sequence steal = new Sequence("Steal");
         Leaf hasGotMoney = new Leaf("Has Got Money", HasMoney);
         Leaf goToBackDoor = new Leaf("Go To Back Door", GoToBackDoor);
@@ -44,9 +35,12 @@ public class RobberBehaviour : MonoBehaviour
         Leaf goToVan = new Leaf("Go To Van", GoToVan);
         Selector openDoor = new Selector("Open Door");
 
+        Invert invertMoney = new Invert("Invert Money");
+        invertMoney.AddChild(hasGotMoney);
+
         openDoor.AddChild(goToFrontDoor);
         openDoor.AddChild(goToBackDoor); 
-        steal.AddChild(hasGotMoney);
+        steal.AddChild(invertMoney);
         steal.AddChild(openDoor);
         steal.AddChild(goToDiamond);       
         steal.AddChild(goToVan);
@@ -70,7 +64,7 @@ public class RobberBehaviour : MonoBehaviour
 
     public Node.Status HasMoney()
     {
-        if(money >= 500)
+        if(money < 500)
         {
             return Node.Status.FAILURE;
         }
@@ -125,35 +119,26 @@ public class RobberBehaviour : MonoBehaviour
 
     }
 
-    public Node.Status GoToLocation(Vector3 destination)
-    {
-        float distanceToTarget = Vector3.Distance(destination, transform.position);
+    //public Node.Status GoToLocation(Vector3 destination)
+    //{
+    //    float distanceToTarget = Vector3.Distance(destination, transform.position);
 
-        if (state == ActionState.IDLE)
-        {
-            agent.SetDestination(destination);
-            state = ActionState.WORKING;
-        }
-        else if (Vector3.Distance(agent.pathEndPosition, destination) >= 2.0f)
-        {
-            state = ActionState.IDLE;
-            return Node.Status.FAILURE;
-        }
-        else if (distanceToTarget < 2.0f)
-        {
-            state = ActionState.IDLE;
-            return Node.Status.SUCCESS;
-        }
+    //    if (state == ActionState.IDLE)
+    //    {
+    //        agent.SetDestination(destination);
+    //        state = ActionState.WORKING;
+    //    }
+    //    else if (Vector3.Distance(agent.pathEndPosition, destination) >= 2.0f)
+    //    {
+    //        state = ActionState.IDLE;
+    //        return Node.Status.FAILURE;
+    //    }
+    //    else if (distanceToTarget < 2.0f)
+    //    {
+    //        state = ActionState.IDLE;
+    //        return Node.Status.SUCCESS;
+    //    }
 
-        return Node.Status.RUNNING;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (treeStatus != Node.Status.SUCCESS) 
-        {
-            treeStatus = behaviourTree.Process();
-        }
-    }
+    //    return Node.Status.RUNNING;
+    //}
 }

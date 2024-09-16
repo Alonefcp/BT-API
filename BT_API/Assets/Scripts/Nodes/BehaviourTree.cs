@@ -16,11 +16,18 @@ public class BehaviourTree : Node
 
     public override Status Process()
     {
-        return children[currentChild].Process();
+        if (children.Count <= 0)
+        {
+            return Status.SUCCESS;
+        }
+        else
+        {
+            return children[currentChild].Process();
+        }
     }
 
 
-    struct NodeLevel
+    protected struct NodeLevel
     {
         public int level;
         public Node node;
@@ -32,7 +39,7 @@ public class BehaviourTree : Node
         string treePrintout = "";
         Stack<NodeLevel> nodeStack = new Stack<NodeLevel>();
         Node currentNode = this;
-        nodeStack.Push(new NodeLevel { level=0,node= currentNode});
+        nodeStack.Push(new NodeLevel { level = 0,node = currentNode});
 
         while (nodeStack.Count != 0)
         {
