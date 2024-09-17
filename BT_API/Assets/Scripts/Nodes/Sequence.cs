@@ -19,7 +19,14 @@ public class Sequence : Node
         }
         else if(childStatus == Status.FAILURE)
         {
-            return childStatus;
+            currentChild = 0;
+
+            foreach (Node node in children) 
+            {
+                node.Reset();
+            }
+
+            return Status.FAILURE;
         }
 
         currentChild++;

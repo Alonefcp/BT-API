@@ -26,6 +26,9 @@ public class RobberBehaviour : BTAgent
     private GameObject frontDoor;
 
     [SerializeField]
+    private GameObject cop;
+
+    [SerializeField]
     [Range(0,1000)]
     private int money = 800;
 
@@ -38,8 +41,6 @@ public class RobberBehaviour : BTAgent
     protected override void Start()
     {
         base.Start();
-      
-        Sequence steal = new Sequence("Steal");
 
         Leaf hasGotMoney = new Leaf("Has Got Money", HasMoney);
 
@@ -61,20 +62,54 @@ public class RobberBehaviour : BTAgent
             selectObject.AddChild(goToArt);
         }
 
+        Sequence runAway = new Sequence("Run away");
+        Leaf canSeeCop = new Leaf("Can see cop", CanSeeCop);
+        Leaf fleeFromCop = new Leaf("Flee from cop", FleeFromCop);
 
         Invert invertMoney = new Invert("Invert Money");
-
         invertMoney.AddChild(hasGotMoney);
 
         openDoor.AddChild(goToFrontDoor);
         openDoor.AddChild(goToBackDoor);
-        
+
+        Invert cantSeeCop = new Invert("Cant see coop");
+        cantSeeCop.AddChild(canSeeCop);
+
+        Sequence s1 = new Sequence("S1");
+        s1.AddChild(invertMoney);
+        Sequence s2 = new Sequence("S2");
+        s2.AddChild(cantSeeCop);
+        s2.AddChild(openDoor);
+
+        Sequence s3 = new Sequence("S3");
+        s3.AddChild(cantSeeCop);
+        s3.AddChild(selectObject);
+
+        Sequence s4 = new Sequence("S4");
+        s4.AddChild(cantSeeCop);
+        s4.AddChild(goToVan);
+
+        //steal.AddChild(s1);
+        //steal.AddChild(s2);
+        //steal.AddChild(s3);
+        //steal.AddChild(s4);
+
+        BehaviourTree seeCop = new BehaviourTree();
+        seeCop.AddChild(cantSeeCop);
+        DPSequence steal = new DPSequence("Steal", seeCop, agent);
         steal.AddChild(invertMoney);
         steal.AddChild(openDoor);
-        steal.AddChild(selectObject);       
+        steal.AddChild(selectObject);
         steal.AddChild(goToVan);
 
-        behaviourTree.AddChild(steal);
+        runAway.AddChild(canSeeCop);
+        runAway.AddChild(fleeFromCop);
+
+        Selector beThief = new Selector("Be thief");
+        beThief.AddChild(steal);
+        beThief.AddChild(runAway);
+
+        behaviourTree.AddChild(beThief);
 
         behaviourTree.Print();         
     }
@@ -134,41 +169,17 @@ public class RobberBehaviour : BTAgent
         return status;
     }
 
-    public Node.Status GoToArt2()
+   
+    public Node.Status CanSeeCop()
     {
-        if (!art[1].activeSelf) //we have sold the art
-        {
-            return Node.Status.FAILURE;
-        }
-
-        Node.Status status = GoToLocation(art[1].transform.position);
-
-        if (status == Node.Status.SUCCESS)
-        {
-            art[1].transform.parent = gameObject.transform;
-            pickUp = art[1];
-        }
-
-        return status;
+        return CanSee(cop.transform.position, "Cop", 10.0f, 90.0f);
     }
 
-    public Node.Status GoToArt3()
+    public Node.Status FleeFromCop()
     {
-        if (!art[2].activeSelf) //we have sold the art
-        {
-            return Node.Status.FAILURE;
-        }
-
-        Node.Status status = GoToLocation(art[2].transform.position);
-
-        if (status == Node.Status.SUCCESS)
-        {
-            art[2].transform.parent = gameObject.transform;
-            pickUp = art[2];
-        }
-
-        return status;
+        return CanFlee(cop.transform.position, 10.0f);
     }
+
 
     public Node.Status HasMoney()
     {
@@ -250,27 +261,4 @@ public class RobberBehaviour : BTAgent
         }
 
     }
-
-    //public Node.Status GoToLocation(Vector3 destination)
-    //{
-    //    float distanceToTarget = Vector3.Distance(destination, transform.position);
-
-    //    if (state == ActionState.IDLE)
-    //    {
-    //        agent.SetDestination(destination);
-    //        state = ActionState.WORKING;
-    //    }
-    //    else if (Vector3.Distance(agent.pathEndPosition, destination) >= 2.0f)
-    //    {
-    //        state = ActionState.IDLE;
-    //        return Node.Status.FAILURE;
-    //    }
-    //    else if (distanceToTarget < 2.0f)
-    //    {
-    //        state = ActionState.IDLE;
-    //        return Node.Status.SUCCESS;
-    //    }
-
-    //    return Node.Status.RUNNING;
-    //}
 }
