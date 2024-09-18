@@ -26,6 +26,9 @@ public class RobberBehaviour : BTAgent
     private GameObject frontDoor;
 
     [SerializeField]
+    private GameObject cop;
+
+    [SerializeField]
     [Range(0,1000)]
     private int money = 800;
 
@@ -61,22 +64,47 @@ public class RobberBehaviour : BTAgent
             selectObject.AddChild(goToArt);
         }
 
+        Sequence runAway = new Sequence("Run away");
+        Leaf canSee = new Leaf("Can see cop?", CanSeeCoop);
+        Leaf flee = new Leaf("Flee from cop", FleeFromCop);
 
         Invert invertMoney = new Invert("Invert Money");
-
         invertMoney.AddChild(hasGotMoney);
+
+        Invert cantSeCop = new Invert("Cant see cop");
+        cantSeCop.AddChild(canSee);
 
         openDoor.AddChild(goToFrontDoor);
         openDoor.AddChild(goToBackDoor);
         
         steal.AddChild(invertMoney);
+        steal.AddChild(cantSeCop);
         steal.AddChild(openDoor);
-        steal.AddChild(selectObject);       
+        steal.AddChild(cantSeCop);
+        steal.AddChild(selectObject);
+        steal.AddChild(cantSeCop);
         steal.AddChild(goToVan);
 
-        behaviourTree.AddChild(steal);
+        runAway.AddChild(canSee);
+        runAway.AddChild(flee);
+
+        Selector beThief = new Selector("Be a thief");
+        beThief.AddChild(steal);
+        beThief.AddChild(runAway);
+
+        behaviourTree.AddChild(beThief);
 
         behaviourTree.Print();         
+    }
+
+    public Node.Status CanSeeCoop()
+    {
+        return CanSee(cop.transform.position, "Cop", 10.0f, 90.0f);
+    }
+
+    public Node.Status FleeFromCop()
+    {
+        return Flee(cop.transform.position,10.0f);
     }
 
     public Node.Status GoToDiamond()

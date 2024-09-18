@@ -14,6 +14,7 @@ public class BTAgent : MonoBehaviour
     protected Node.Status treeStatus = Node.Status.RUNNING;
 
     private WaitForSeconds waitForSeconds;
+    private Vector3 rememberedLocation;
 
     // Start is called before the first frame update
     protected virtual void Start()
@@ -42,6 +43,36 @@ public class BTAgent : MonoBehaviour
     //        treeStatus = behaviourTree.Process();
     //    }
     //}
+
+    public Node.Status CanSee(Vector3 target, string targetTag, float distance, float maxAngle)
+    {
+        Vector3 directionToTarget = target - transform.position;
+        float angle = Vector3.Angle(directionToTarget, transform.forward);
+
+        if (angle <= maxAngle || directionToTarget.magnitude <= distance) 
+        {
+            RaycastHit hitInfo;
+            if (Physics.Raycast(transform.position, directionToTarget, out hitInfo)) 
+            {
+                if(hitInfo.collider.gameObject.CompareTag(targetTag))
+                {
+                    return Node.Status.SUCCESS;
+                }
+            }
+        }
+
+        return Node.Status.FAILURE;
+    }
+
+    public Node.Status Flee(Vector3 location, float distance)
+    {
+        if(state == ActionState.IDLE)
+        {
+            rememberedLocation = transform.position + (transform.position - location).normalized * distance;
+        }
+
+        return GoToLocation(rememberedLocation);
+    }
 
     protected Node.Status GoToLocation(Vector3 destination)
     {
