@@ -1,16 +1,33 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
-public class Sequence : Node
+public class DepSequence : Node
 {
-    public Sequence(string nodeName): base(nodeName)
-    {
+    private BehaviourTree dependancy;
+    private NavMeshAgent agent;
 
+    public DepSequence(string nodeName, BehaviourTree d, NavMeshAgent a) : base(nodeName)
+    {
+        dependancy = d;
+        agent = a;
     }
 
     public override Status Process()
     {
+        if(dependancy.Process() == Status.FAILURE)
+        {           
+            agent.ResetPath();
+
+            foreach (Node node in children)
+            {
+                node.Reset();
+            }
+            return Status.FAILURE;
+        }
+
+
         Status childStatus = children[currentChild].Process();
 
         if(childStatus == Status.RUNNING)
@@ -19,14 +36,7 @@ public class Sequence : Node
         }
         else if(childStatus == Status.FAILURE)
         {
-            currentChild = 0;
-
-            foreach (Node child in children) 
-            {
-                child.Reset();
-            }
-
-            return Status.FAILURE;
+            return childStatus;
         }
 
         currentChild++;
