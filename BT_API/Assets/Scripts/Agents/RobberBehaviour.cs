@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-using System;
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -119,6 +119,8 @@ public class RobberBehaviour : BTAgent
         behaviourTree.AddChild(beThief);
 
         behaviourTree.Print();         
+
+        StartCoroutine(ReduceMoney());
     }
 
     public Node.Status CanSeeCoop()
@@ -279,50 +281,13 @@ public class RobberBehaviour : BTAgent
         return status;
     }
 
-    public Node.Status GoToDoor(GameObject door)
+    private IEnumerator ReduceMoney()
     {
-        Node.Status status = GoToLocation(door.transform.position);
-
-        if (status == Node.Status.SUCCESS) 
+        while (true)
         {
-            if(!door.GetComponent<Lock>().IsLocked)
-            {
-                door.GetComponent<NavMeshObstacle>().enabled = false;
-                //door.SetActive(false);
-                return Node.Status.SUCCESS;
-            }
-            else
-            {
-                return Node.Status.FAILURE; 
-            }
-        }
-        else
-        {
-            return status;
-        }
+            money = Mathf.Clamp(money - 20, 0, 1000);
 
+            yield return new WaitForSeconds(Random.Range(1.0f, 5.0f));
+        }
     }
-
-    //public Node.Status GoToLocation(Vector3 destination)
-    //{
-    //    float distanceToTarget = Vector3.Distance(destination, transform.position);
-
-    //    if (state == ActionState.IDLE)
-    //    {
-    //        agent.SetDestination(destination);
-    //        state = ActionState.WORKING;
-    //    }
-    //    else if (Vector3.Distance(agent.pathEndPosition, destination) >= 2.0f)
-    //    {
-    //        state = ActionState.IDLE;
-    //        return Node.Status.FAILURE;
-    //    }
-    //    else if (distanceToTarget < 2.0f)
-    //    {
-    //        state = ActionState.IDLE;
-    //        return Node.Status.SUCCESS;
-    //    }
-
-    //    return Node.Status.RUNNING;
-    //}
 }

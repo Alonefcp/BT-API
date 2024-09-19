@@ -95,5 +95,29 @@ public class BTAgent : MonoBehaviour
         }
 
         return Node.Status.RUNNING;
-    }  
+    }
+
+    protected Node.Status GoToDoor(GameObject door)
+    {
+        Node.Status status = GoToLocation(door.transform.position);
+
+        if (status == Node.Status.SUCCESS)
+        {
+            if (!door.GetComponent<Lock>().IsLocked)
+            {
+                door.GetComponent<NavMeshObstacle>().enabled = false;
+                //door.SetActive(false);
+                return Node.Status.SUCCESS;
+            }
+            else
+            {
+                return Node.Status.FAILURE;
+            }
+        }
+        else
+        {
+            return status;
+        }
+
+    }
 }
