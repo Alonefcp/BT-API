@@ -76,18 +76,39 @@ public class RobberBehaviour : BTAgent
 
         openDoor.AddChild(goToFrontDoor);
         openDoor.AddChild(goToBackDoor);
-        
-        steal.AddChild(invertMoney);
-        steal.AddChild(cantSeCop);
-        steal.AddChild(openDoor);
-        steal.AddChild(cantSeCop);
-        steal.AddChild(selectObject);
-        steal.AddChild(cantSeCop);
-        steal.AddChild(goToVan);
 
         runAway.AddChild(canSee);
         runAway.AddChild(flee);
 
+        Sequence s1 = new Sequence("s1");
+        s1.AddChild(invertMoney);
+
+        Sequence s2 = new Sequence("s2");
+        s2.AddChild(cantSeCop);
+        s2.AddChild(openDoor);
+
+        Sequence s3 = new Sequence("s3");
+        s3.AddChild(cantSeCop);
+        s3.AddChild(selectObject);
+
+        Sequence s4 = new Sequence("s4");
+        s4.AddChild(cantSeCop);
+        s4.AddChild(goToVan);
+
+        steal.AddChild(s1);
+        steal.AddChild(s2);
+        steal.AddChild(s3);
+        steal.AddChild(s4);
+
+        //steal.AddChild(invertMoney);
+        //steal.AddChild(cantSeCop);
+        //steal.AddChild(openDoor);
+        //steal.AddChild(cantSeCop);
+        //steal.AddChild(selectObject);
+        //steal.AddChild(cantSeCop); 
+        //steal.AddChild(goToVan);
+
+       
         Selector beThief = new Selector("Be a thief");
         beThief.AddChild(steal);
         beThief.AddChild(runAway);
