@@ -27,6 +27,8 @@ public class DepSequence : Node
             return Status.FAILURE;
         }
 
+        // Prevent main sequence from running until all dependency nodes are checked
+        //if (dependancy.Process() == Status.RUNNING) { return Status.RUNNING; }
 
         Status childStatus = children[currentChild].Process();
 
