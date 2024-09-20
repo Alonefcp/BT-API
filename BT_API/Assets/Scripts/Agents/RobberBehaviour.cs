@@ -100,20 +100,28 @@ public class RobberBehaviour : BTAgent
         //steal.AddChild(s3);
         //steal.AddChild(s4);
 
-        BehaviourTree seeCop = new BehaviourTree();
-        //Sequence conditions = new Sequence("Steal conditions");
-        //conditions.AddChild(invertMoney);
-        //conditions.AddChild(cantSeCop);
-        seeCop.AddChild(cantSeCop);
-        DepSequence steal = new DepSequence("Steal", seeCop, agent);
+        Leaf isOpen = new Leaf("Is open", IsOpen);
+        Invert isClosed = new Invert("Is closed");
+        isClosed.AddChild(isOpen);
 
-        steal.AddChild(invertMoney);
+        BehaviourTree stealConditions = new BehaviourTree();
+        Sequence conditions = new Sequence("Steal conditions");
+        conditions.AddChild(isClosed);
+        conditions.AddChild(cantSeCop);
+        conditions.AddChild(invertMoney);
+        stealConditions.AddChild(conditions);
+        DepSequence steal = new DepSequence("Steal", stealConditions, agent);
+        //steal.AddChild(invertMoney);
         steal.AddChild(openDoor);
         steal.AddChild(selectObject);
         steal.AddChild(goToVan);
-    
+
+        Selector stealWithFallback = new Selector("Steal with fallback");
+        stealWithFallback.AddChild(steal);
+        stealWithFallback.AddChild(goToVan);
+
         Selector beThief = new Selector("Be a thief");
-        beThief.AddChild(steal);
+        beThief.AddChild(stealWithFallback);
         beThief.AddChild(runAway);
 
         behaviourTree.AddChild(beThief);
@@ -241,9 +249,12 @@ public class RobberBehaviour : BTAgent
         Node.Status status = GoToLocation(van.transform.position);
         if(status == Node.Status.SUCCESS)
         {
-            money += 300;
-            
-            pickUp.SetActive(false);
+            if(pickUp)
+            {
+                money += 300;        
+                pickUp.SetActive(false);
+                pickUp = null;
+            }
         }
 
         return status;

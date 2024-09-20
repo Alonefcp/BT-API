@@ -120,4 +120,17 @@ public class BTAgent : MonoBehaviour
         }
 
     }
+
+    protected Node.Status IsOpen()
+    {
+
+        if (Blackboard.Instance.TimeOfDay() < 9 || Blackboard.Instance.TimeOfDay() > 17)
+        {
+            return Node.Status.FAILURE;
+        }
+        else
+        {
+            return Node.Status.SUCCESS;
+        }
+    }
 }
