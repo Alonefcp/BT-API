@@ -16,10 +16,12 @@ public class PatronBehaviour : BTAgent
     [SerializeField]
     private int boredom = 0;
 
-    [SerializeField]
+
     private bool ticket = false;
+    private bool isWaiting = false;
 
     public void SetHasATicket(bool hasATicket) { ticket = hasATicket; }
+    public bool PatronIsWaiting() { return isWaiting; }
 
     // Start is called before the first frame update
     protected override void Start()
@@ -105,7 +107,7 @@ public class PatronBehaviour : BTAgent
     public Node.Status GoToHome()
     {
         Node.Status status = GoToLocation(homeBase.transform.position);
-    
+        isWaiting = false;
 
         return status;
     }
@@ -137,8 +139,9 @@ public class PatronBehaviour : BTAgent
 
     public Node.Status IsWaiting()
     {
-        if (Blackboard.Instance.RegisterPatron(gameObject) == gameObject)
+        if (Blackboard.Instance.RegisterPatron(gameObject))
         {
+            isWaiting = true;
             return Node.Status.SUCCESS;
         }
         else 
