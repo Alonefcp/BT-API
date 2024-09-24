@@ -14,7 +14,7 @@ public class BTAgent : MonoBehaviour
     protected Node.Status treeStatus = Node.Status.RUNNING;
 
     private WaitForSeconds waitForSeconds;
-    private Vector3 rememberedLocation;
+    protected Vector3 rememberedLocation;
 
     // Start is called before the first frame update
     protected virtual void Start()

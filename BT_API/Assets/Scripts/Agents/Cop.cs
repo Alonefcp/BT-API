@@ -7,6 +7,8 @@ public class Cop : BTAgent
     [SerializeField]
     private GameObject[] patrolPoints;
 
+    [SerializeField]
+    private GameObject robber;
 
     protected override void Start()
     {
@@ -20,14 +22,50 @@ public class Cop : BTAgent
             selectPatrolPoint.AddChild(pp);
         }
 
-        behaviourTree.AddChild(selectPatrolPoint);  
+        Sequence chaseRobber = new Sequence("Chase");
+        Leaf canSee = new Leaf("Can see robber?", CanSeeRobber);
+        Leaf chase = new Leaf("Chase robber", ChaseRobber);
+
+        chaseRobber.AddChild(canSee);
+        chaseRobber.AddChild(chase);
+
+        Invert cantSeeRobber = new Invert("Cant see robber");
+        cantSeeRobber.AddChild(canSee);
+
+        BehaviourTree patrolConditions = new BehaviourTree();
+        Sequence condition = new Sequence("Patrol conditions");
+        condition.AddChild(cantSeeRobber);
+        patrolConditions.AddChild(condition);
+        DepSequence patrol = new DepSequence("Patrol until", patrolConditions, agent);
+        patrol.AddChild(selectPatrolPoint);
+
+        Selector beCop = new Selector("beCop");
+        beCop.AddChild(patrol);
+        beCop.AddChild(chaseRobber);
+
+        behaviourTree.AddChild(beCop);  
     }
 
 
     public Node.Status GoToPoint(int i)
     {
         Node.Status status = GoToLocation(patrolPoints[i].transform.position);
-        return status;
+        return status; 
     }
 
+    public Node.Status CanSeeRobber()
+    {
+        return CanSee(robber.transform.position, "Robber", 5.0f, 60.0f);
+    }
+
+    public Node.Status ChaseRobber()
+    {
+        float chaseDistance = 10.0f;
+
+        if (state == ActionState.IDLE) 
+        {
+            rememberedLocation = transform.position - (transform.position - robber.transform.position).normalized * chaseDistance;
+        }
+        return GoToLocation(rememberedLocation);
+    }
 }

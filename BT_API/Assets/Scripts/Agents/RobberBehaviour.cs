@@ -102,7 +102,7 @@ public class RobberBehaviour : BTAgent
 
         Leaf isOpen = new Leaf("Is open", IsOpen);
         Invert isClosed = new Invert("Is closed");
-        isClosed.AddChild(isOpen);
+        isClosed.AddChild(isOpen); 
 
         BehaviourTree stealConditions = new BehaviourTree();
         Sequence conditions = new Sequence("Steal conditions");
