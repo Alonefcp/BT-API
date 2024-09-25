@@ -87,7 +87,7 @@ public class Blackboard : MonoBehaviour
                 patrons.Clear();
             }
 
-            yield return new WaitForSeconds(1.0f);
+            yield return new WaitForSeconds(1.25f);
         }
     }
 }
