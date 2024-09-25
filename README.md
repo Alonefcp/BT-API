@@ -4,9 +4,9 @@ In this project I create a custom behaviour tree API from scratch using Unity an
 
 With this API I recreate a simulation of an art gallery, where there are four types of agents:​
 
-- Robber: when the gallery is closed for customers he tries to steal a paint. If he see a cop he runs away from him and goes to his car, where he is secure. If he managed to steal a painting he returns to his car and if he doesn't have enough money he wil try to steal another painting.
+- Robber: when the gallery is closed for customers he tries to steal a paint. If he see a cop he runs away from him and goes to his car, where he is secure. If he managed to steal a painting he returns to his car and if he doesn't have enough money he will try to steal another painting.
 
-- Cop: he patrols through the gallery. If he sees the robber he starts chasing him and when he loses the robber he continues patrolling.
+- Cop: he patrols through the gallery. If he sees the robber he starts chasing him and when he loses him he continues patrolling.
 
 - Worker: he goes to the gallery door to give tickets to the customers. Then he returns to his office.
 
