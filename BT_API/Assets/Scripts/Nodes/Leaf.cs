@@ -2,12 +2,12 @@
 public class Leaf : Node
 {
     public delegate Status Tick();
-    public Tick ProcessMethod;
+    private Tick ProcessMethod;
 
     public delegate Status TickM(int index);
-    public TickM ProcessMethodM;
+    private TickM ProcessMethodM;
 
-    public int index;
+    public int index { get; set; }
 
     public Leaf() { }
 

@@ -3,15 +3,14 @@ using System.Collections.Generic;
 public class Node 
 {
     public enum Status {SUCCESS, RUNNING, FAILURE }
-    public Status status;
+    public Status status { get; set; }
 
-    public List<Node> children = new List<Node>();
-    public int currentChild = 0;
+    public List<Node> children { get; set; } = new List<Node>();
+  
+    protected int currentChild = 0;
 
-    public string name;
-    public int sortOrder;
-
-    
+    public string name { get; set; }
+    public int sortOrder { get; set; }
 
     public Node() { }
 
